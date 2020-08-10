@@ -1,11 +1,10 @@
+from telegram.ext import MessageHandler, Filters, run_async
 from telegram import Update
 from data_base import get_welcome_message, get_bad_words, add_suspicious_bad_word, add_warn
 from difflib import SequenceMatcher
 from threading import Thread
 from sqlite3 import DatabaseError
 from time import sleep
-from telegram.ext import ConversationHandler,CallbackQueryHandler,Filters,MessageHandler
-
 
 
 def welcome(update, context):
@@ -15,14 +14,10 @@ def welcome(update, context):
     if welcome_message:
         update.message.reply_text(welcome_message)
 
-    #####   Bad Words #####
-        
+
 # this function's handlers should be added in a different group to let it run for each message
-def bad_word(update: Update, context):
-    Thread(bad_word_thread(update)).start()
-
-
-def bad_word_thread(update: Update):
+@run_async
+def bad_word(update: Update):
     words = update.message.text.split()
     # The While-Try-Except statement is used because multithreading could cause DB connection errors
     while True:
@@ -46,7 +41,6 @@ def bad_word_thread(update: Update):
                     except DatabaseError:
                         sleep(1)
 
-    #######################
 
 handlers = [
     MessageHandler(Filters.status_update.new_chat_members, welcome)
